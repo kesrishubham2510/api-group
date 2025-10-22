@@ -1,16 +1,14 @@
 package com.myreflectionthoughts.group.datamodel.dto.response;
 
-import com.myreflectionthoughts.group.datamodel.entity.Post;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class DiscussionGroupResponse {
+public class DiscussionGroupMetaInfoDTO {
     private String groupId;
     private String groupName;
     private List<UserDetailsDTO> users;
-    private List<PostDTO> posts;
     private String createdAt;
     private String description;
 }
