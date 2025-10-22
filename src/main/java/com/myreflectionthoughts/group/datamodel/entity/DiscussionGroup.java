@@ -1,0 +1,44 @@
+package com.myreflectionthoughts.group.datamodel.entity;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.UuidGenerator;
+
+import java.util.List;
+
+@Data
+@Entity
+@Table(
+        name = "discussion_groups",
+        indexes = {
+                @Index(name="idx_group_id", columnList = "group_id", unique = true)
+        }
+)
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "groupId"
+)
+public class DiscussionGroup {
+
+    @Id
+    @UuidGenerator
+    @Column(name = "group_id")
+    private String groupId;
+
+    @Column(name = "group_name")
+    private String groupName;
+
+    @ManyToMany(mappedBy = "discussionGroups")
+    private List<User> users;
+
+    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY, mappedBy="discussionGroup")
+    private List<Post> posts;
+
+    @Column(name = "created_at")
+    private String createdAt;
+
+    @Column(name = "description")
+    private String description;
+}
