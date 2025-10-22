@@ -16,7 +16,7 @@ import java.util.List;
 @Table(name="users", schema = "letschat",
         indexes = {
                 @Index(name="idx_users_email", columnList = "email", unique = true),
-                @Index(name="idx_users_username", columnList = "username", unique = true)
+                @Index(name="idx_users_username", columnList = "user_name", unique = true)
         }
 )
 @JsonIdentityInfo(
