@@ -9,4 +9,14 @@ public class PostDTO {
     private int likes;
     private String postedAt;
     private UserDetailsDTO author;
+
+    public PostDTO(){}
+
+    public PostDTO(String postId, String content, int likes, String postedAt, UserDetailsDTO author) {
+        this.postId = postId;
+        this.content = content;
+        this.likes = likes;
+        this.postedAt = postedAt;
+        this.author = author;
+    }
 }

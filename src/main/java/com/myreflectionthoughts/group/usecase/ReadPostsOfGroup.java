@@ -2,6 +2,6 @@ package com.myreflectionthoughts.group.usecase;
 
 import org.springframework.http.ResponseEntity;
 
-public interface ReadPostsOfGroup<req, res> {
-    ResponseEntity<res> readPosts(req request);
+public interface ReadPostsOfGroup<res> {
+    ResponseEntity<res> readPosts(String groupId, int pageIndex, int pageSize);
 }

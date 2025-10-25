@@ -12,16 +12,24 @@ import com.myreflectionthoughts.group.exception.DiscussionGroupException;
 import com.myreflectionthoughts.group.usecase.AddUserToGroup;
 import com.myreflectionthoughts.group.usecase.CreateGroup;
 import com.myreflectionthoughts.group.usecase.ReadGroupInformation;
+import com.myreflectionthoughts.group.usecase.ReadPostsOfGroup;
 import com.myreflectionthoughts.group.util.MappingUtility;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DiscussionGroupProvider
         implements CreateGroup<CreateDiscussionGroupRequest, DiscussionGroupMetaInfoDTO>,
         ReadGroupInformation<String, DiscussionGroupMetaInfoDTO>,
-        AddUserToGroup<AddUserToGroupRequest, AddUserToGroupDTO> {
+        AddUserToGroup<AddUserToGroupRequest, AddUserToGroupDTO>,
+        ReadPostsOfGroup<PostsOfGroupDTO> {
 
     private final DiscussionGroupRepository discussionGroupRepository;
     private final UserRepository userRepository;
@@ -87,5 +95,34 @@ public class DiscussionGroupProvider
         response.setMemberShipId(discussionGroup.getCreatedAt());
 
         return ResponseEntity.status(201).headers(httpHeaders).body(response);
+    }
+
+    @Override
+    public ResponseEntity<PostsOfGroupDTO> readPosts(String groupId, int pageIndex, int pageSize) {
+
+        // TODO:- Enhance it in a way that it allows all ADMINS to execute but checks for a user's
+        //  membership in the group before allowing
+        // Can be implemented using the JWT
+
+        if(pageIndex<0){
+            pageIndex = 0;
+        }
+
+        if(pageSize < 3){
+            pageSize = 3;
+        }else if(pageSize>10){
+            pageSize = 10;
+        }
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        List<PostDTO> posts = postRepository.findMyPosts(groupId, pageable).stream().collect(Collectors.toCollection(ArrayList::new));
+
+        PostsOfGroupDTO postsOfGroupDTO = new PostsOfGroupDTO();
+        postsOfGroupDTO.setGroupId(groupId);
+        postsOfGroupDTO.setPosts(posts);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        return ResponseEntity.status(201).headers(httpHeaders).body(postsOfGroupDTO);
     }
 }

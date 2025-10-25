@@ -29,7 +29,7 @@ public class Post {
     @Column(name = "content")
     private String content;
 
-    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY, mappedBy = "post")
     private List<PostLike> likes;
 
     // I don't want to fetch these details un-necessarily

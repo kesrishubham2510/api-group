@@ -5,9 +5,12 @@ import com.myreflectionthoughts.group.datamodel.dto.request.AddUserToGroupReques
 import com.myreflectionthoughts.group.datamodel.dto.request.CreateDiscussionGroupRequest;
 import com.myreflectionthoughts.group.datamodel.dto.response.AddUserToGroupDTO;
 import com.myreflectionthoughts.group.datamodel.dto.response.DiscussionGroupMetaInfoDTO;
+import com.myreflectionthoughts.group.datamodel.dto.response.PostsOfGroupDTO;
 import com.myreflectionthoughts.group.dataprovider.service.DiscussionGroupProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 // All end points will be accessible to ADMIN user only
@@ -37,4 +40,15 @@ public class DiscussionGroupController {
     public ResponseEntity<AddUserToGroupDTO> addUserToGroup(@RequestBody AddUserToGroupRequest addUserToGroupRequest){
         return discussionGroupProvider.addUserToGroup(addUserToGroupRequest);
     }
+
+    // will be accessible to all ADMIN user, and user who is part of the group
+    @GetMapping(RestConstant.READ_POSTS_OF_A_GROUP)
+    public ResponseEntity<PostsOfGroupDTO> getPostsOfGroup(
+            @PathVariable("groupId") String groupId,
+            @RequestParam(value = "pageIndex", defaultValue = "0", required = false) int pageInd,
+            @RequestParam(value = "pageSize", defaultValue = "5", required = false) int pageSize){
+
+        return discussionGroupProvider.readPosts(groupId, pageInd, pageSize);
+    }
+
 }
