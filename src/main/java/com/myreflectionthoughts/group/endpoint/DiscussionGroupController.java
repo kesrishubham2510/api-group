@@ -1,10 +1,8 @@
 package com.myreflectionthoughts.group.endpoint;
 
 import com.myreflectionthoughts.group.config.RestConstant;
-import com.myreflectionthoughts.group.datamodel.dto.request.AddPostToGroupRequest;
 import com.myreflectionthoughts.group.datamodel.dto.request.AddUserToGroupRequest;
 import com.myreflectionthoughts.group.datamodel.dto.request.CreateDiscussionGroupRequest;
-import com.myreflectionthoughts.group.datamodel.dto.response.AddPostToGroupResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.AddUserToGroupDTO;
 import com.myreflectionthoughts.group.datamodel.dto.response.DiscussionGroupMetaInfoDTO;
 import com.myreflectionthoughts.group.dataprovider.service.DiscussionGroupProvider;
@@ -39,11 +37,4 @@ public class DiscussionGroupController {
     public ResponseEntity<AddUserToGroupDTO> addUserToGroup(@RequestBody AddUserToGroupRequest addUserToGroupRequest){
         return discussionGroupProvider.addUserToGroup(addUserToGroupRequest);
     }
-
-    //  // This endpoint will be accessible to all roles, the user should be part of the group
-    @PostMapping(RestConstant.ADD_POST_IN_GROUP)
-    public ResponseEntity<AddPostToGroupResponse> addPost(@RequestBody AddPostToGroupRequest addPostToGroupRequest){
-        return discussionGroupProvider.addPostToGroup(addPostToGroupRequest);
-    }
-
 }

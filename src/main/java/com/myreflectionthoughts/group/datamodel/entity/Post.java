@@ -30,12 +30,10 @@ public class Post {
     private String content;
 
     @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id_fk")
     private List<PostLike> likes;
 
     // I don't want to fetch these details un-necessarily
     @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id_fk")
     private List<Comment> comments;
 
     @ManyToOne

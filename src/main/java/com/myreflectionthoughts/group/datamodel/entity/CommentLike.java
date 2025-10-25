@@ -19,4 +19,8 @@ public class CommentLike {
 
     @Column(name = "liked_at")
     private String likedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "comment_id_fk")
+    private Comment comment;
 }

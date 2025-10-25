@@ -2,6 +2,6 @@ package com.myreflectionthoughts.group.usecase;
 
 import org.springframework.http.ResponseEntity;
 
-public interface AddLikeToPost <req, res>{
-    ResponseEntity<res> addLikeToPost(req request);
+public interface AddLikeToComment<req, res> {
+    ResponseEntity<res> addLikeToComment(req req);
 }

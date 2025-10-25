@@ -19,13 +19,13 @@ public class Comment {
     @Column(name ="comment_text")
     private String commentText;
 
-    @Column(name ="commented_by")
-    private String commentedBy;
-
     @Column(name="commented_at")
     private String commentedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "post_id_fk")
+    private Post post;
+
     @OneToMany(cascade =  CascadeType.REFRESH)
-    @JoinColumn(name = "comment_id_fk")
     private List<CommentLike> likes;
 }

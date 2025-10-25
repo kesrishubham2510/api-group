@@ -17,4 +17,8 @@ public class PostLike {
     private String userId;
     @Column(name = "liked_at")
     private String likedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id_fk")
+    private Post post;
 }
