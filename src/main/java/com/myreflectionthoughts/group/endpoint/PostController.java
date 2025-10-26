@@ -69,9 +69,9 @@ public class PostController {
     @GetMapping(RestConstant.READ_COMMENT_OF_A_POST)
     public ResponseEntity<CommentsOnPostResponse> unlikeCommentOnPost(@PathVariable("postId") String postId, @PathVariable("groupId") String groupId,
                                                                       @RequestParam(value = "userId", required = true) String userId,
-                                                                      @RequestParam(value = "pageIndex", defaultValue = "0", required = false) int pageInd,
+                                                                      @RequestParam(value = "pageIndex", defaultValue = "0", required = false) int pageIndex,
                                                                       @RequestParam(value = "pageSize", defaultValue = "5", required = false) int pageSize){
-        return postProvider.readCommentsOnAPost(groupId, postId, userId);
+        return postProvider.readCommentsOnAPost(groupId, postId, userId, pageSize, pageIndex);
     }
 
 

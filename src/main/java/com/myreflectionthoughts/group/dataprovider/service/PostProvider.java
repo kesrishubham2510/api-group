@@ -256,7 +256,20 @@ public class PostProvider implements
     }
 
     @Override
-    public ResponseEntity<CommentsOnPostResponse> readCommentsOnAPost(String groupId, String postId, String userId) {
+    public ResponseEntity<CommentsOnPostResponse> readCommentsOnAPost(String groupId, String postId, String userId, int pageSize, int pageIndex) {
+
+        if(pageSize<3) {
+            pageSize = 3;
+        }else if(pageSize>10){
+            pageSize=10;
+        }
+
+        if(pageIndex<0){
+            pageIndex=0;
+        }else if(pageIndex>20){
+            throw new DiscussionGroupException("PAGE_INDEX_TOO_LARGE", "Please use a page index smaller than 20");
+        }
+
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
 
         checkMemberShip(groupId, userId);
@@ -267,7 +280,7 @@ public class PostProvider implements
             throw new DiscussionGroupException("INVALID_POST", "The post:- "+postId+", is not linked with the group:- "+groupId);
         }
 
-        Pageable pageable  = PageRequest.of(0, 2);
+        Pageable pageable  = PageRequest.of(pageIndex, pageSize);
         Page<AddCommentToPostResponse> page = commentRepository.findCommentsByPost_PostId(postId, pageable);
         List<AddCommentToPostResponse> comments = page.stream().collect(Collectors.toCollection(ArrayList::new));
 
