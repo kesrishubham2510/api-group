@@ -1,6 +1,6 @@
 package com.myreflectionthoughts.group.dataprovider.repository;
 
-import com.myreflectionthoughts.group.datamodel.dto.response.PostDTO;
+import com.myreflectionthoughts.group.datamodel.dto.response.PostResponse;
 import com.myreflectionthoughts.group.datamodel.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,5 +32,5 @@ public interface PostRepository extends
     WHERE p.discussionGroup.groupId = :groupId
     ORDER BY postedAt DESC
     """)
-    Page<PostDTO> findMyPosts(String groupId, Pageable page);
+    Page<PostResponse> findMyPosts(String groupId, Pageable page);
 }

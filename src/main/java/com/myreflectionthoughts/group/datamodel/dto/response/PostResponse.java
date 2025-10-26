@@ -3,16 +3,16 @@ package com.myreflectionthoughts.group.datamodel.dto.response;
 import lombok.Data;
 
 @Data
-public class PostDTO {
+public class PostResponse {
     private String postId;
     private String content;
     private int likes;
     private String postedAt;
-    private UserDetailsDTO author;
+    private UserDetailsResponse author;
 
-    public PostDTO(){}
+    public PostResponse(){}
 
-    public PostDTO(String postId, String content, int likes, String postedAt, UserDetailsDTO author) {
+    public PostResponse(String postId, String content, int likes, String postedAt, UserDetailsResponse author) {
         this.postId = postId;
         this.content = content;
         this.likes = likes;

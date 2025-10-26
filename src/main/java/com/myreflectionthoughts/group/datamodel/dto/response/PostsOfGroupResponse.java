@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class PostsOfGroupDTO {
+public class PostsOfGroupResponse {
     private String groupId;
-    private List<PostDTO> posts;
+    private List<PostResponse> posts;
 }

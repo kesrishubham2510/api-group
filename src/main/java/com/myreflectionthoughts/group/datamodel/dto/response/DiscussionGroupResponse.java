@@ -1,6 +1,5 @@
 package com.myreflectionthoughts.group.datamodel.dto.response;
 
-import com.myreflectionthoughts.group.datamodel.entity.Post;
 import lombok.Data;
 
 import java.util.List;
@@ -9,8 +8,8 @@ import java.util.List;
 public class DiscussionGroupResponse {
     private String groupId;
     private String groupName;
-    private List<UserDetailsDTO> users;
-    private List<PostDTO> posts;
+    private List<UserDetailsResponse> users;
+    private List<PostResponse> posts;
     private String createdAt;
     private String description;
 }

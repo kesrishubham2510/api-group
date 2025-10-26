@@ -6,18 +6,18 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class UserDetailsDTO {
+public class UserDetailsResponse {
 
     private String userId;
     private String username;
     private String joined;
     private String role;
 
-    public UserDetailsDTO(){
+    public UserDetailsResponse(){
         this(null, null, null, null);
     }
 
-    public UserDetailsDTO(String userId, String username, String joined, UserRole role){
+    public UserDetailsResponse(String userId, String username, String joined, UserRole role){
         this.userId = userId;
         this.username = username;
         this.joined = joined;

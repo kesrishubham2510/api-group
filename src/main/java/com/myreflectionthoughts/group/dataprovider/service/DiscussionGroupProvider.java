@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class DiscussionGroupProvider
-        implements CreateGroup<CreateDiscussionGroupRequest, DiscussionGroupMetaInfoDTO>,
-        ReadGroupInformation<String, DiscussionGroupMetaInfoDTO>,
-        AddUserToGroup<AddUserToGroupRequest, AddUserToGroupDTO>,
-        ReadPostsOfGroup<PostsOfGroupDTO> {
+        implements CreateGroup<CreateDiscussionGroupRequest, DiscussionGroupMetaInfoResponse>,
+        ReadGroupInformation<String, DiscussionGroupMetaInfoResponse>,
+        AddUserToGroup<AddUserToGroupRequest, AddUserToGroupResponse>,
+        ReadPostsOfGroup<PostsOfGroupResponse> {
 
     private final DiscussionGroupRepository discussionGroupRepository;
     private final UserRepository userRepository;
@@ -47,7 +47,7 @@ public class DiscussionGroupProvider
     }
 
     @Override
-    public ResponseEntity<DiscussionGroupMetaInfoDTO> createDiscussionGroup(CreateDiscussionGroupRequest request) {
+    public ResponseEntity<DiscussionGroupMetaInfoResponse> createDiscussionGroup(CreateDiscussionGroupRequest request) {
 
         DiscussionGroup discussionGroup = mappingUtility.buildDiscussionGroup(request);
 
@@ -62,7 +62,7 @@ public class DiscussionGroupProvider
     }
 
     @Override
-    public ResponseEntity<DiscussionGroupMetaInfoDTO> readGroupInformation(String groupId) {
+    public ResponseEntity<DiscussionGroupMetaInfoResponse> readGroupInformation(String groupId) {
         DiscussionGroup discussionGroup =  this.discussionGroupRepository.findById(groupId)
                 .orElseThrow(()-> new DiscussionGroupException("INVALID_GROUP_ID", "Discussion group with id:- "+groupId+", does not exists"));
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -70,7 +70,7 @@ public class DiscussionGroupProvider
     }
 
     @Override
-    public ResponseEntity<AddUserToGroupDTO> addUserToGroup(AddUserToGroupRequest request) {
+    public ResponseEntity<AddUserToGroupResponse> addUserToGroup(AddUserToGroupRequest request) {
 
         DiscussionGroup discussionGroup = this.discussionGroupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new DiscussionGroupException("INVALID_GROUP_ID", "Discussion group with id:- " + request.getGroupId() + ", does not exists"));
@@ -88,7 +88,7 @@ public class DiscussionGroupProvider
 
         HttpHeaders httpHeaders = new HttpHeaders();
 
-        AddUserToGroupDTO response = new AddUserToGroupDTO();
+        AddUserToGroupResponse response = new AddUserToGroupResponse();
 
         response.setUserId(request.getUserId());
         response.setDiscussionGroupId(request.getGroupId());
@@ -98,7 +98,7 @@ public class DiscussionGroupProvider
     }
 
     @Override
-    public ResponseEntity<PostsOfGroupDTO> readPosts(String groupId, int pageIndex, int pageSize) {
+    public ResponseEntity<PostsOfGroupResponse> readPosts(String groupId, int pageIndex, int pageSize) {
 
         // TODO:- Enhance it in a way that it allows all ADMINS to execute but checks for a user's
         //  membership in the group before allowing
@@ -115,14 +115,14 @@ public class DiscussionGroupProvider
         }
 
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
-        List<PostDTO> posts = postRepository.findMyPosts(groupId, pageable).stream().collect(Collectors.toCollection(ArrayList::new));
+        List<PostResponse> posts = postRepository.findMyPosts(groupId, pageable).stream().collect(Collectors.toCollection(ArrayList::new));
 
-        PostsOfGroupDTO postsOfGroupDTO = new PostsOfGroupDTO();
-        postsOfGroupDTO.setGroupId(groupId);
-        postsOfGroupDTO.setPosts(posts);
+        PostsOfGroupResponse postsOfGroupResponse = new PostsOfGroupResponse();
+        postsOfGroupResponse.setGroupId(groupId);
+        postsOfGroupResponse.setPosts(posts);
 
         HttpHeaders httpHeaders = new HttpHeaders();
 
-        return ResponseEntity.status(201).headers(httpHeaders).body(postsOfGroupDTO);
+        return ResponseEntity.status(201).headers(httpHeaders).body(postsOfGroupResponse);
     }
 }

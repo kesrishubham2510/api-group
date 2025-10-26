@@ -26,36 +26,36 @@ public class MappingUtility {
         return discussionGroup;
     }
 
-    public List<UserDetailsDTO> buildUserDetailsDTO(List<User> userList){
+    public List<UserDetailsResponse> buildUserDetailsDTO(List<User> userList){
 
         return userList.stream().map(user -> {
-            UserDetailsDTO userDetailsDTO = new UserDetailsDTO();
-            userDetailsDTO.setUserId(user.getUserId());
-            userDetailsDTO.setUsername(user.getUsername());
-            userDetailsDTO.setRole(user.getRole().name());
-            userDetailsDTO.setJoined(user.getJoined());
+            UserDetailsResponse userDetailsResponse = new UserDetailsResponse();
+            userDetailsResponse.setUserId(user.getUserId());
+            userDetailsResponse.setUsername(user.getUsername());
+            userDetailsResponse.setRole(user.getRole().name());
+            userDetailsResponse.setJoined(user.getJoined());
 
-            return userDetailsDTO;
+            return userDetailsResponse;
         }).collect(Collectors.toList());
     }
 
-    public List<PostDTO> buildPostDTO(List<Post> postList){
+    public List<PostResponse> buildPostDTO(List<Post> postList){
 
         return postList.stream().map(user -> {
-            PostDTO postDTO = new PostDTO();
-            postDTO.setPostId(postDTO.getPostId());
-            postDTO.setContent(postDTO.getContent());
-            postDTO.setAuthor(new UserDetailsDTO());
-            postDTO.setLikes(0);
+            PostResponse postResponse = new PostResponse();
+            postResponse.setPostId(postResponse.getPostId());
+            postResponse.setContent(postResponse.getContent());
+            postResponse.setAuthor(new UserDetailsResponse());
+            postResponse.setLikes(0);
 
-            return postDTO;
+            return postResponse;
         }).collect(Collectors.toList());
     }
 
 
-    public DiscussionGroupMetaInfoDTO mapToDTO(DiscussionGroup discussionGroup){
+    public DiscussionGroupMetaInfoResponse mapToDTO(DiscussionGroup discussionGroup){
 
-        DiscussionGroupMetaInfoDTO response = new DiscussionGroupMetaInfoDTO();
+        DiscussionGroupMetaInfoResponse response = new DiscussionGroupMetaInfoResponse();
 
         response.setCreatedAt(discussionGroup.getCreatedAt());
         response.setDescription(discussionGroup.getDescription());
