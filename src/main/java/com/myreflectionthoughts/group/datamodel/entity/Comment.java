@@ -26,6 +26,9 @@ public class Comment {
     @JoinColumn(name = "post_id_fk")
     private Post post;
 
-    @OneToMany(cascade =  CascadeType.REFRESH)
+    @OneToMany(cascade =  CascadeType.REFRESH, mappedBy = "comment")
     private List<CommentLike> likes;
+
+    @Column(name = "user_id")
+    private String userId;
 }

@@ -14,7 +14,7 @@ public class UserDetailsResponse {
     private String role;
 
     public UserDetailsResponse(){
-        this(null, null, null, null);
+
     }
 
     public UserDetailsResponse(String userId, String username, String joined, UserRole role){
@@ -22,5 +22,12 @@ public class UserDetailsResponse {
         this.username = username;
         this.joined = joined;
         this.role = role.name();
+    }
+
+    public UserDetailsResponse(String userId, String username, String joined, String role){
+        this.userId = userId;
+        this.username = username;
+        this.joined = joined;
+        this.role = role;
     }
 }

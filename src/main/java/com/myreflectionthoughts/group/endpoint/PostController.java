@@ -4,6 +4,7 @@ import com.myreflectionthoughts.group.config.RestConstant;
 import com.myreflectionthoughts.group.datamodel.dto.request.*;
 import com.myreflectionthoughts.group.datamodel.dto.response.AddCommentToPostResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.AddPostToGroupResponse;
+import com.myreflectionthoughts.group.datamodel.dto.response.CommentsOnPostResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.LikePostResponse;
 import com.myreflectionthoughts.group.dataprovider.service.PostProvider;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +65,15 @@ public class PostController {
         unlikeCommentOnPostRequest.setCommentId(commentId);
         return postProvider.removeLikeFromComment(unlikeCommentOnPostRequest);
     }
+
+    @GetMapping(RestConstant.READ_COMMENT_OF_A_POST)
+    public ResponseEntity<CommentsOnPostResponse> unlikeCommentOnPost(@PathVariable("postId") String postId, @PathVariable("groupId") String groupId,
+                                                                      @RequestParam(value = "userId", required = true) String userId,
+                                                                      @RequestParam(value = "pageIndex", defaultValue = "0", required = false) int pageInd,
+                                                                      @RequestParam(value = "pageSize", defaultValue = "5", required = false) int pageSize){
+        return postProvider.readCommentsOnAPost(groupId, postId, userId);
+    }
+
 
 
 }

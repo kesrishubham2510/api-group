@@ -33,7 +33,7 @@ public class Post {
     private List<PostLike> likes;
 
     // I don't want to fetch these details un-necessarily
-    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY, mappedBy = "post")
     private List<Comment> comments;
 
     @ManyToOne

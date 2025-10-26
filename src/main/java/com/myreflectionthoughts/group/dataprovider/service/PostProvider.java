@@ -3,12 +3,16 @@ package com.myreflectionthoughts.group.dataprovider.service;
 import com.myreflectionthoughts.group.datamodel.dto.request.*;
 import com.myreflectionthoughts.group.datamodel.dto.response.AddCommentToPostResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.AddPostToGroupResponse;
+import com.myreflectionthoughts.group.datamodel.dto.response.CommentsOnPostResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.LikePostResponse;
 import com.myreflectionthoughts.group.datamodel.entity.*;
 import com.myreflectionthoughts.group.dataprovider.repository.*;
 import com.myreflectionthoughts.group.exception.DiscussionGroupException;
 import com.myreflectionthoughts.group.usecase.*;
 import com.myreflectionthoughts.group.util.MappingUtility;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -27,7 +31,8 @@ public class PostProvider implements
         AddLikeToPost<LikePostRequest, LikePostResponse>,
         RemoveLikeFromPost<UnLikePostRequest, LikePostResponse>,
         AddLikeToComment<LikeCommentOnPostRequest, LikePostResponse>,
-        RemoveLikeFromComment<UnlikeCommentOnPostRequest, LikePostResponse>
+        RemoveLikeFromComment<UnlikeCommentOnPostRequest, LikePostResponse>,
+        ReadCommentsOnAPost<CommentsOnPostResponse>
 
 {
 
@@ -120,6 +125,8 @@ public class PostProvider implements
         comment.setCommentedAt(String.valueOf(Instant.now()));
         comment.setLikes(new ArrayList<>());
         comment.setPost(post);
+        comment.setUserId(request.getUserId());
+
 
         try {
             comment = commentRepository.save(comment);
@@ -246,6 +253,31 @@ public class PostProvider implements
         HttpHeaders httpHeaders = new HttpHeaders();
 
         return ResponseEntity.status(201).headers(httpHeaders).body(mappingUtility.buildLikePostInteractionResponse(LikePostResponse.class, request.getCommentLikeId()));
+    }
+
+    @Override
+    public ResponseEntity<CommentsOnPostResponse> readCommentsOnAPost(String groupId, String postId, String userId) {
+        // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
+
+        checkMemberShip(groupId, userId);
+
+        Post post = postRepository.findById(postId).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+postId+", does not exists"));
+
+        if(!post.getDiscussionGroup().getGroupId().equalsIgnoreCase(groupId)){
+            throw new DiscussionGroupException("INVALID_POST", "The post:- "+postId+", is not linked with the group:- "+groupId);
+        }
+
+        Pageable pageable  = PageRequest.of(0, 2);
+        Page<AddCommentToPostResponse> page = commentRepository.findCommentsByPost_PostId(postId, pageable);
+        List<AddCommentToPostResponse> comments = page.stream().collect(Collectors.toCollection(ArrayList::new));
+
+        CommentsOnPostResponse commentsOnPostResponse = new CommentsOnPostResponse();
+        commentsOnPostResponse.setPostId(postId);
+        commentsOnPostResponse.setComments(comments);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        return ResponseEntity.status(200).headers(httpHeaders).body(commentsOnPostResponse);
     }
 
     private void checkMemberShip(String discussionGroupId, String userId){

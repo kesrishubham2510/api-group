@@ -15,12 +15,12 @@ public interface PostRepository extends
         PagingAndSortingRepository<Post, String> {
 
     @Query("""
-    SELECT new com.myreflectionthoughts.group.datamodel.dto.response.PostDTO(
+    SELECT new com.myreflectionthoughts.group.datamodel.dto.response.PostResponse(
         p.postId,
         p.content,
         SIZE(p.likes),
         p.postedAt,
-        new com.myreflectionthoughts.group.datamodel.dto.response.UserDetailsDTO(
+        new com.myreflectionthoughts.group.datamodel.dto.response.UserDetailsResponse(
                    p.user.userId,
                    p.user.username,
                    p.user.joined,
