@@ -60,10 +60,22 @@ public class MappingUtility {
         response.setCreatedAt(discussionGroup.getCreatedAt());
         response.setDescription(discussionGroup.getDescription());
         response.setGroupName(discussionGroup.getGroupName());
-        response.setUsers(buildUserDetailsDTO(discussionGroup.getUsers()));
         response.setGroupId(discussionGroup.getGroupId());
 
         return response;
+    }
+
+    public List<UserDetailsResponse> buildUserDetailsResponse(List<Object[]> nativeResult){
+
+        return nativeResult.stream().map(row -> {
+            UserDetailsResponse userDetailsResponse = new UserDetailsResponse();
+            userDetailsResponse.setUserId(String.valueOf(row[0]));
+            userDetailsResponse.setUsername(String.valueOf(row[1]));
+            userDetailsResponse.setRole(String.valueOf(row[2]));
+            userDetailsResponse.setJoined(String.valueOf(row[3]));
+
+            return userDetailsResponse;
+        }).collect(Collectors.toList());
     }
 
     public Post buildPost(String content){

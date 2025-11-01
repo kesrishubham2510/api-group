@@ -58,15 +58,24 @@ public class DiscussionGroupProvider
 
         discussionGroup = discussionGroupRepository.save(discussionGroup);
         HttpHeaders httpHeaders = new HttpHeaders();
-        return ResponseEntity.status(201).headers(httpHeaders).body(mappingUtility.mapToDTO(discussionGroup));
+
+        DiscussionGroupMetaInfoResponse response = mappingUtility.mapToDTO(discussionGroup);
+        // the user who creates the group will be the default member of that group, when the group is created
+        response.setUsers(mappingUtility.buildUserDetailsDTO(List.of(user)));
+        return ResponseEntity.status(201).headers(httpHeaders).body(response);
     }
 
     @Override
     public ResponseEntity<DiscussionGroupMetaInfoResponse> readGroupInformation(String groupId) {
         DiscussionGroup discussionGroup =  this.discussionGroupRepository.findById(groupId)
                 .orElseThrow(()-> new DiscussionGroupException("INVALID_GROUP_ID", "Discussion group with id:- "+groupId+", does not exists"));
+
         HttpHeaders httpHeaders = new HttpHeaders();
-        return ResponseEntity.status(200).headers(httpHeaders).body(mappingUtility.mapToDTO(discussionGroup));
+
+        DiscussionGroupMetaInfoResponse response = mappingUtility.mapToDTO(discussionGroup);
+        response.setUsers(mappingUtility.buildUserDetailsResponse(discussionGroupRepository.findLatestMembersOfTheGroup(groupId)));
+
+        return ResponseEntity.status(200).headers(httpHeaders).body(response);
     }
 
     @Override
