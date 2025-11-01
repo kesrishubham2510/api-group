@@ -35,7 +35,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         String username = this.jwtUtility.extractUsername(jwtToken);
         UserAuth userAuth = (UserAuth) userAuthServiceProvider.loadUserByUsername(username);
 
-        return new UsernamePasswordAuthenticationToken(userAuth.getUser(), null);
+        return new UsernamePasswordAuthenticationToken(userAuth, null, userAuth.getAuthorities());
     }
 
     @Override

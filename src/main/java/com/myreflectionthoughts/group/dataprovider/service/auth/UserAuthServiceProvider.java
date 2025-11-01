@@ -3,7 +3,6 @@ package com.myreflectionthoughts.group.dataprovider.service.auth;
 import com.myreflectionthoughts.group.datamodel.entity.User;
 import com.myreflectionthoughts.group.datamodel.entity.UserAuth;
 import com.myreflectionthoughts.group.dataprovider.repository.UserRepository;
-import com.myreflectionthoughts.group.exception.DiscussionGroupException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
