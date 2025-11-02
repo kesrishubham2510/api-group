@@ -7,5 +7,4 @@ public class LikeCommentOnPostRequest {
     private String groupId;
     private String commentId;
     private String postId;
-    private String userId;
 }

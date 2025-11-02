@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class AddUserToGroupRequest {
-    private String userId;
     private String groupId;
 }

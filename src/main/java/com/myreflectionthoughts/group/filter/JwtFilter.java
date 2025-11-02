@@ -1,7 +1,6 @@
 package com.myreflectionthoughts.group.filter;
 
 import com.myreflectionthoughts.group.datamodel.AuthenticationToken.JwtAuthenticationToken;
-import com.myreflectionthoughts.group.datamodel.entity.UserAuth;
 import com.myreflectionthoughts.group.dataprovider.service.auth.JwtAuthenticationProvider;
 import com.myreflectionthoughts.group.util.AppUtility;
 import com.myreflectionthoughts.group.util.JwtUtility;
@@ -11,7 +10,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;

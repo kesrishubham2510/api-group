@@ -14,6 +14,7 @@ import com.myreflectionthoughts.group.usecase.AddUserToGroup;
 import com.myreflectionthoughts.group.usecase.CreateGroup;
 import com.myreflectionthoughts.group.usecase.ReadGroupInformation;
 import com.myreflectionthoughts.group.usecase.ReadPostsOfGroup;
+import com.myreflectionthoughts.group.util.AppUtility;
 import com.myreflectionthoughts.group.util.MappingUtility;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +53,7 @@ public class DiscussionGroupProvider
     public ResponseEntity<DiscussionGroupMetaInfoResponse> createDiscussionGroup(CreateDiscussionGroupRequest request) {
 
         DiscussionGroup discussionGroup = mappingUtility.buildDiscussionGroup(request);
-        String requesterId = retrieveUserId();
+        String requesterId = AppUtility.retrieveUserId();
 
         User user = userRepository.findById(requesterId).orElseThrow(
                 ()-> new DiscussionGroupException("INVALID_CREATOR", "User:- "+requesterId+", does not exists"));
@@ -84,16 +85,16 @@ public class DiscussionGroupProvider
     @Override
     public ResponseEntity<AddUserToGroupResponse> addUserToGroup(AddUserToGroupRequest request) {
 
-        String requesterId = retrieveUserId();
+        String requesterId = AppUtility.retrieveUserId();
 
         DiscussionGroup discussionGroup = this.discussionGroupRepository.findById(requesterId)
                 .orElseThrow(() -> new DiscussionGroupException("INVALID_GROUP_ID", "Discussion group with id:- " + request.getGroupId() + ", does not exists"));
 
-        User user = userRepository.findById(request.getUserId()).orElseThrow(
-                () -> new DiscussionGroupException("INVALID_CREATOR", "User:- " + request.getUserId() + ", does not exists"));
+        User user = userRepository.findById(requesterId).orElseThrow(
+                () -> new DiscussionGroupException("INVALID_CREATOR", "User:- " + requesterId + ", does not exists"));
 
-        if (!discussionGroupRepository.findMemberShip(request.getGroupId(), request.getUserId()).isEmpty()) {
-            throw new DiscussionGroupException("INVALID_REQUEST", "User:- " + request.getUserId() + ", already a member of the group");
+        if (!discussionGroupRepository.findMemberShip(request.getGroupId(), requesterId).isEmpty()) {
+            throw new DiscussionGroupException("INVALID_REQUEST", "User:- " + requesterId + ", already a member of the group");
         }
 
         discussionGroup.getUsers().add(user);
@@ -104,7 +105,7 @@ public class DiscussionGroupProvider
 
         AddUserToGroupResponse response = new AddUserToGroupResponse();
 
-        response.setUserId(request.getUserId());
+        response.setUserId(requesterId);
         response.setDiscussionGroupId(request.getGroupId());
         response.setMemberShipId(discussionGroup.getCreatedAt());
 
@@ -138,18 +139,5 @@ public class DiscussionGroupProvider
         HttpHeaders httpHeaders = new HttpHeaders();
 
         return ResponseEntity.status(201).headers(httpHeaders).body(postsOfGroupResponse);
-    }
-
-    private String retrieveUserId(){
-        String userId = "";
-
-        try {
-            UserAuth userAuth = (UserAuth) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            userId = userAuth.getUserId();
-        }catch (Exception ex){
-            throw new DiscussionGroupException("INVALID_USER", "Could not retrieve user details from token");
-        }
-
-        return userId;
     }
 }

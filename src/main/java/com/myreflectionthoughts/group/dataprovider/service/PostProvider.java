@@ -9,6 +9,7 @@ import com.myreflectionthoughts.group.datamodel.entity.*;
 import com.myreflectionthoughts.group.dataprovider.repository.*;
 import com.myreflectionthoughts.group.exception.DiscussionGroupException;
 import com.myreflectionthoughts.group.usecase.*;
+import com.myreflectionthoughts.group.util.AppUtility;
 import com.myreflectionthoughts.group.util.MappingUtility;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -64,14 +65,15 @@ public class PostProvider implements
     public ResponseEntity<AddPostToGroupResponse> addPostToGroup(AddPostToGroupRequest request) {
 
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
+        String requesterId = AppUtility.retrieveUserId();
 
-        checkMemberShip(request.getDiscussionGroupId(), request.getAuthorId());
+        checkMemberShip(request.getDiscussionGroupId(), requesterId);
 
         DiscussionGroup discussionGroup = this.discussionGroupRepository.findById(request.getDiscussionGroupId())
                 .orElseThrow(()-> new DiscussionGroupException("INVALID_GROUP_ID", "Discussion group with id:- "+request.getDiscussionGroupId()+", does not exists"));
 
-        User user = userRepository.findById(request.getAuthorId()).orElseThrow(
-                ()-> new DiscussionGroupException("INVALID_CREATOR", "User:- "+request.getAuthorId()+", does not exists"));
+        User user = userRepository.findById(requesterId).orElseThrow(
+                ()-> new DiscussionGroupException("INVALID_CREATOR", "User:- "+requesterId+", does not exists"));
 
         Post post = mappingUtility.buildPost(request.getContent());
         post.setUser(user);
@@ -90,15 +92,16 @@ public class PostProvider implements
     @Override
     public ResponseEntity<AddPostToGroupResponse> updatePost(UpdatePostInAGroup request) {
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
+        String requesterId = AppUtility.retrieveUserId();
 
         // check membership of the user
-        checkMemberShip(request.getDiscussionGroupId(), request.getAuthorId());
+        checkMemberShip(request.getDiscussionGroupId(), requesterId);
 
-        User user = userRepository.findById(request.getAuthorId()).orElseThrow(()->  new DiscussionGroupException("INVALID_CREATOR", "User:- "+request.getAuthorId()+", does not exists"));
+        User user = userRepository.findById(requesterId).orElseThrow(()->  new DiscussionGroupException("INVALID_CREATOR", "User:- "+requesterId+", does not exists"));
         Post post = postRepository.findById(request.getPostId()).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+request.getPostId()+", does not exists"));
 
         if(!Objects.equals(post.getUser().getUserId(), user.getUserId()))
-            throw new DiscussionGroupException("WRONG_AUTHOR", "User:- "+request.getAuthorId()+" is not the author of the post:-  "+request.getPostId());
+            throw new DiscussionGroupException("WRONG_AUTHOR", "User:- "+requesterId+" is not the author of the post:-  "+request.getPostId());
 
         post.setContent(request.getContent());
         post = postRepository.save(post);
@@ -115,8 +118,9 @@ public class PostProvider implements
     public ResponseEntity<AddCommentToPostResponse> addComment(AddCommentToPostRequest request) {
 
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
+        String requesterId = AppUtility.retrieveUserId();
 
-        checkMemberShip(request.getGroupId(), request.getUserId());
+        checkMemberShip(request.getGroupId(), requesterId);
 
         Post post = postRepository.findById(request.getPostId()).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+request.getPostId()+", does not exists"));
 
@@ -125,7 +129,7 @@ public class PostProvider implements
         comment.setCommentedAt(String.valueOf(Instant.now()));
         comment.setLikes(new ArrayList<>());
         comment.setPost(post);
-        comment.setUserId(request.getUserId());
+        comment.setUserId(requesterId);
 
 
         try {
@@ -136,14 +140,15 @@ public class PostProvider implements
 
         HttpHeaders headers = new HttpHeaders();
 
-        return  ResponseEntity.status(201).headers(headers).body(mappingUtility.buildAddCommentToPostResponse(request.getUserId(), comment, post));
+        return  ResponseEntity.status(201).headers(headers).body(mappingUtility.buildAddCommentToPostResponse(requesterId, comment, post));
     }
 
     @Override
     public ResponseEntity<LikePostResponse> addLikeToPost(LikePostRequest request) {
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
+        String requesterId = AppUtility.retrieveUserId();
 
-        checkMemberShip(request.getGroupId(), request.getUserId());
+        checkMemberShip(request.getGroupId(), requesterId);
         Post post = postRepository.findById(request.getPostId()).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+request.getPostId()+", does not exists"));
 
         if(!post.getDiscussionGroup().getGroupId().equalsIgnoreCase(request.getGroupId())){
@@ -151,14 +156,14 @@ public class PostProvider implements
         }
 
 
-        if(!postLikeRepository.findByPostIdAndUserId(request.getPostId(), request.getUserId()).isEmpty()){
+        if(!postLikeRepository.findByPostIdAndUserId(request.getPostId(), requesterId).isEmpty()){
             throw new DiscussionGroupException("INTERACTION_ALREADY_REGISTERED", "You can't like a post you have already liked");
         }
 
         PostLike postLike = new PostLike();
 
         postLike.setLikedAt(String.valueOf(Instant.now()));
-        postLike.setUserId(request.getUserId());
+        postLike.setUserId(requesterId);
         postLike.setPost(post);
 
         postLike = postLikeRepository.save(postLike);
@@ -172,14 +177,16 @@ public class PostProvider implements
     public ResponseEntity<LikePostResponse> removeLikeFromPost(UnLikePostRequest request) {
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
 
-        checkMemberShip(request.getGroupId(), request.getUserId());
+        String requesterId = AppUtility.retrieveUserId();
+
+        checkMemberShip(request.getGroupId(), requesterId);
         Post post = postRepository.findById(request.getPostId()).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+request.getPostId()+", does not exists"));
 
         if(!post.getDiscussionGroup().getGroupId().equalsIgnoreCase(request.getGroupId())){
             throw new DiscussionGroupException("INVALID_POST", "The post:- "+request.getPostId()+", is not linked with the group:- "+request.getGroupId());
         }
 
-        if(postLikeRepository.findByPostIdAndUserId(request.getPostId(), request.getUserId()).isEmpty()){
+        if(postLikeRepository.findByPostIdAndUserId(request.getPostId(), requesterId).isEmpty()){
             throw new DiscussionGroupException("INTERACTION_NOT_REGISTERED", "You can't unlike a post you haven't liked");
         }
 
@@ -193,7 +200,9 @@ public class PostProvider implements
     public ResponseEntity<LikePostResponse> addLikeToComment(LikeCommentOnPostRequest request) {
 
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
-        checkMemberShip(request.getGroupId(), request.getUserId());
+        String requesterId = AppUtility.retrieveUserId();
+
+        checkMemberShip(request.getGroupId(), requesterId);
 
         Post post = postRepository.findById(request.getPostId()).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+request.getPostId()+", does not exists"));
 
@@ -209,13 +218,13 @@ public class PostProvider implements
 
         // check if the user has already liked this comment
 
-        if(!(commentLikeRepository.findByCommentIdAndUserId(request.getCommentId(), request.getUserId())).isEmpty()){
+        if(!(commentLikeRepository.findByCommentIdAndUserId(request.getCommentId(), requesterId)).isEmpty()){
             throw new DiscussionGroupException("INTERACTION_ALREADY_REGISTERED", "You can't like a already liked comment");
         }
 
         CommentLike commentLike = new CommentLike();
         commentLike.setLikedAt(String.valueOf(Instant.now()));
-        commentLike.setUserId(request.getUserId());
+        commentLike.setUserId(requesterId);
         commentLike.setComment(existingComment);
 
         commentLike =  commentLikeRepository.save(commentLike);
@@ -230,7 +239,9 @@ public class PostProvider implements
 
         // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
 
-        checkMemberShip(request.getGroupId(), request.getUserId());
+        String requesterId = AppUtility.retrieveUserId();
+
+        checkMemberShip(request.getGroupId(), requesterId);
 
         Post post = postRepository.findById(request.getPostId()).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+request.getPostId()+", does not exists"));
 
@@ -244,7 +255,7 @@ public class PostProvider implements
 
         // check if the user has already liked this comment
 
-        if(commentLikeRepository.findByCommentIdAndUserId(request.getCommentId(), request.getUserId()).isEmpty()){
+        if(commentLikeRepository.findByCommentIdAndUserId(request.getCommentId(), requesterId).isEmpty()){
             throw new DiscussionGroupException("INTERACTION_NOT_REGISTERED", "You can't unlike a comment you have not liked already");
         }
 
