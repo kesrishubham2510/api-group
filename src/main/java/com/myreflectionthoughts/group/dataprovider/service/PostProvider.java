@@ -6,6 +6,7 @@ import com.myreflectionthoughts.group.datamodel.dto.response.AddPostToGroupRespo
 import com.myreflectionthoughts.group.datamodel.dto.response.CommentsOnPostResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.LikePostResponse;
 import com.myreflectionthoughts.group.datamodel.entity.*;
+import com.myreflectionthoughts.group.datamodel.role.UserRole;
 import com.myreflectionthoughts.group.dataprovider.repository.*;
 import com.myreflectionthoughts.group.exception.DiscussionGroupException;
 import com.myreflectionthoughts.group.usecase.*;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -199,7 +201,6 @@ public class PostProvider implements
     @Override
     public ResponseEntity<LikePostResponse> addLikeToComment(LikeCommentOnPostRequest request) {
 
-        // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
         String requesterId = AppUtility.retrieveUserId();
 
         checkMemberShip(request.getGroupId(), requesterId);
@@ -237,8 +238,6 @@ public class PostProvider implements
     @Override
     public ResponseEntity<LikePostResponse> removeLikeFromComment(UnlikeCommentOnPostRequest request) {
 
-        // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
-
         String requesterId = AppUtility.retrieveUserId();
 
         checkMemberShip(request.getGroupId(), requesterId);
@@ -267,7 +266,7 @@ public class PostProvider implements
     }
 
     @Override
-    public ResponseEntity<CommentsOnPostResponse> readCommentsOnAPost(String groupId, String postId, String userId, int pageSize, int pageIndex) {
+    public ResponseEntity<CommentsOnPostResponse> readCommentsOnAPost(String groupId, String postId, int pageSize, int pageIndex) {
 
         if(pageSize<3) {
             pageSize = 3;
@@ -281,9 +280,9 @@ public class PostProvider implements
             throw new DiscussionGroupException("PAGE_INDEX_TOO_LARGE", "Please use a page index smaller than 20");
         }
 
-        // TODO:- To retrieve the userId from the securityContext of this transaction, once the JWT is implemented
+        String requesterId = AppUtility.retrieveUserId();
 
-        checkMemberShip(groupId, userId);
+        checkMemberShip(groupId, requesterId);
 
         Post post = postRepository.findById(postId).orElseThrow(()->  new DiscussionGroupException("INVALID_POST", "Post:- "+postId+", does not exists"));
 
