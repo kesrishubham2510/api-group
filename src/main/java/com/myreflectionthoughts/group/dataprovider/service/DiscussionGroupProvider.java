@@ -66,7 +66,8 @@ public class DiscussionGroupProvider
 
         DiscussionGroupMetaInfoResponse response = mappingUtility.mapToDTO(discussionGroup);
         // the user who creates the group will be the default member of that group, when the group is created
-        response.setUsers(mappingUtility.buildUserDetailsDTO(List.of(user)));
+        response.setUsers(new ArrayList<>());
+        response.setGroupAdmin(mappingUtility.buildUserDetailsDTO(List.of(user)).get(0));
         return ResponseEntity.status(201).headers(httpHeaders).body(response);
     }
 
@@ -78,6 +79,9 @@ public class DiscussionGroupProvider
         HttpHeaders httpHeaders = new HttpHeaders();
 
         DiscussionGroupMetaInfoResponse response = mappingUtility.mapToDTO(discussionGroup);
+
+        List<Object[]> groupAdmin = discussionGroupRepository.findTheAdmin(groupId);
+        response.setGroupAdmin(mappingUtility.buildUserDetailsResponse(groupAdmin).get(0));
         response.setUsers(mappingUtility.buildUserDetailsResponse(discussionGroupRepository.findLatestMembersOfTheGroup(groupId)));
 
         return ResponseEntity.status(200).headers(httpHeaders).body(response);

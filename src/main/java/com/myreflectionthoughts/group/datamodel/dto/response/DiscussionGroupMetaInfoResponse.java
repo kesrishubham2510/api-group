@@ -11,4 +11,5 @@ public class DiscussionGroupMetaInfoResponse {
     private List<UserDetailsResponse> users;
     private String createdAt;
     private String description;
+    private UserDetailsResponse groupAdmin;
 }

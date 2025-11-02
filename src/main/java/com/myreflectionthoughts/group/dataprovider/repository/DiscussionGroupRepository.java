@@ -19,9 +19,25 @@ public interface DiscussionGroupRepository extends JpaRepository<DiscussionGroup
             FROM user_group_membership mem
             JOIN users u
               ON u.user_id = mem.user_id_fk
-            WHERE mem.group_id_fk = :groupId
+            WHERE mem.group_id_fk = :groupId and u.role = 'USER'
             ORDER BY u.joined DESC
             LIMIT 5
             """ , nativeQuery = true)
     List<Object[]> findLatestMembersOfTheGroup(@Param("groupId") String groupId);
+
+    @Query(value = """
+            select 
+                   u.user_id,
+                   u.user_name,
+                   u.role,
+                   u.joined
+             from users u
+            join user_group_membership ugm
+             on u.user_id = ugm.user_id_fk
+            where	
+             ugm.group_id_fk = :groupId 
+                AND 
+             u.role = 'ADMIN'
+            """, nativeQuery = true)
+    List<Object[]> findTheAdmin(@Param("groupId") String groupId);
 }
