@@ -20,14 +20,12 @@ public class PostController {
         this.postProvider = postProvider;
     }
 
-    // This endpoint will be accessible to all roles, the user should be part of the group
     @PostMapping(RestConstant.ADD_POST_IN_GROUP)
     public ResponseEntity<AddPostToGroupResponse> addPost(@PathVariable("groupId") String groupId, @RequestBody AddPostToGroupRequest addPostToGroupRequest){
         addPostToGroupRequest.setDiscussionGroupId(groupId);
         return postProvider.addPostToGroup(addPostToGroupRequest);
     }
 
-    // This endpoint will be accessible to group member who is the author of the concerned post
     @PatchMapping(RestConstant.UPDATE_POST_IN_GROUP)
     public ResponseEntity<AddPostToGroupResponse> updatePost(@PathVariable("groupId") String groupId, @RequestBody UpdatePostInAGroup updatePostInAGroup){
         updatePostInAGroup.setDiscussionGroupId(groupId);

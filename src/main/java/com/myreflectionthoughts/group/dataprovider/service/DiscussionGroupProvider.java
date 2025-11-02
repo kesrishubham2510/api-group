@@ -6,6 +6,7 @@ import com.myreflectionthoughts.group.datamodel.dto.response.*;
 import com.myreflectionthoughts.group.datamodel.entity.DiscussionGroup;
 import com.myreflectionthoughts.group.datamodel.entity.User;
 import com.myreflectionthoughts.group.datamodel.entity.UserAuth;
+import com.myreflectionthoughts.group.datamodel.role.UserRole;
 import com.myreflectionthoughts.group.dataprovider.repository.DiscussionGroupRepository;
 import com.myreflectionthoughts.group.dataprovider.repository.PostRepository;
 import com.myreflectionthoughts.group.dataprovider.repository.UserRepository;
@@ -115,9 +116,14 @@ public class DiscussionGroupProvider
     @Override
     public ResponseEntity<PostsOfGroupResponse> readPosts(String groupId, int pageIndex, int pageSize) {
 
-        // TODO:- Enhance it in a way that it allows all ADMINS to execute but checks for a user's
-        //  membership in the group before allowing
-        // Can be implemented using the JWT
+
+        if(((UserAuth)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().getRole().compareTo(UserRole.USER)==0) {
+
+            String requesterId = AppUtility.retrieveUserId();
+            if (discussionGroupRepository.findMemberShip(groupId, requesterId).isEmpty()) {
+                throw new DiscussionGroupException("BAD_REQUEST", "User:- " + requesterId + ", not a member of the group");
+            }
+        }
 
         if(pageIndex<0){
             pageIndex = 0;
