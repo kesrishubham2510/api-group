@@ -2,12 +2,16 @@ package com.myreflectionthoughts.group.dataprovider.service;
 
 import com.myreflectionthoughts.group.datamodel.dto.request.AddUserToGroupRequest;
 import com.myreflectionthoughts.group.datamodel.dto.request.CreateDiscussionGroupRequest;
+import com.myreflectionthoughts.group.datamodel.dto.request.RaiseGroupJoinRequest;
 import com.myreflectionthoughts.group.datamodel.dto.response.*;
+import com.myreflectionthoughts.group.datamodel.entity.AdmissionRequest;
 import com.myreflectionthoughts.group.datamodel.entity.DiscussionGroup;
 import com.myreflectionthoughts.group.datamodel.entity.User;
 import com.myreflectionthoughts.group.datamodel.entity.UserAuth;
 import com.myreflectionthoughts.group.datamodel.role.UserRole;
 import com.myreflectionthoughts.group.dataprovider.repository.DiscussionGroupRepository;
+import com.myreflectionthoughts.group.dataprovider.repository.AdmissionRequestRepository;
+import com.myreflectionthoughts.group.dataprovider.repository.PostLikeRepository;
 import com.myreflectionthoughts.group.dataprovider.repository.PostRepository;
 import com.myreflectionthoughts.group.dataprovider.repository.UserRepository;
 import com.myreflectionthoughts.group.exception.DiscussionGroupException;
@@ -15,6 +19,7 @@ import com.myreflectionthoughts.group.usecase.AddUserToGroup;
 import com.myreflectionthoughts.group.usecase.CreateGroup;
 import com.myreflectionthoughts.group.usecase.ReadGroupInformation;
 import com.myreflectionthoughts.group.usecase.ReadPostsOfGroup;
+import com.myreflectionthoughts.group.usecase.UserCanRaiseRequestToJoinGroup;
 import com.myreflectionthoughts.group.util.AppUtility;
 import com.myreflectionthoughts.group.util.MappingUtility;
 import org.springframework.data.domain.PageRequest;
@@ -33,20 +38,27 @@ public class DiscussionGroupProvider
         implements CreateGroup<CreateDiscussionGroupRequest, DiscussionGroupMetaInfoResponse>,
         ReadGroupInformation<String, DiscussionGroupMetaInfoResponse>,
         AddUserToGroup<AddUserToGroupRequest, AddUserToGroupResponse>,
-        ReadPostsOfGroup<PostsOfGroupResponse> {
+        ReadPostsOfGroup<PostsOfGroupResponse>,
+        UserCanRaiseRequestToJoinGroup<RaiseGroupJoinRequest, GroupJoinResponse> {
 
     private final DiscussionGroupRepository discussionGroupRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final MappingUtility mappingUtility;
+    private final AdmissionRequestRepository admissionRequestRepository;
+    private final PostLikeRepository postLikeRepository;
 
     public DiscussionGroupProvider(DiscussionGroupRepository discussionGroupRepository,
                                    UserRepository userRepository,
                                    PostRepository postRepository,
+                                   AdmissionRequestRepository admissionRequestRepository,
+                                   PostLikeRepository postLikeRepository,
                                    MappingUtility mappingUtility){
         this.discussionGroupRepository = discussionGroupRepository;
         this.userRepository = userRepository;
         this.postRepository = postRepository;
+        this.admissionRequestRepository = admissionRequestRepository;
+        this.postLikeRepository = postLikeRepository;
         this.mappingUtility = mappingUtility;
     }
 
@@ -92,7 +104,7 @@ public class DiscussionGroupProvider
 
         String requesterId = AppUtility.retrieveUserId();
 
-        DiscussionGroup discussionGroup = this.discussionGroupRepository.findById(requesterId)
+        DiscussionGroup discussionGroup = this.discussionGroupRepository.findById(request.getGroupId())
                 .orElseThrow(() -> new DiscussionGroupException("INVALID_GROUP_ID", "Discussion group with id:- " + request.getGroupId() + ", does not exists"));
 
         User user = userRepository.findById(requesterId).orElseThrow(
@@ -141,7 +153,7 @@ public class DiscussionGroupProvider
 
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         List<PostResponse> posts = postRepository.findMyPosts(groupId, pageable).stream().collect(Collectors.toCollection(ArrayList::new));
-
+        populateLikeDetails(groupId, posts);
         PostsOfGroupResponse postsOfGroupResponse = new PostsOfGroupResponse();
         postsOfGroupResponse.setGroupId(groupId);
         postsOfGroupResponse.setPosts(posts);
@@ -149,5 +161,51 @@ public class DiscussionGroupProvider
         HttpHeaders httpHeaders = new HttpHeaders();
 
         return ResponseEntity.status(201).headers(httpHeaders).body(postsOfGroupResponse);
+    }
+
+    @Override
+    public ResponseEntity<GroupJoinResponse> raiseRequest(RaiseGroupJoinRequest request) {
+
+        String userId = AppUtility.retrieveUserId();
+        GroupJoinResponse groupJoinResponse = new GroupJoinResponse();
+        groupJoinResponse.setMessage("You can't join a group you are already part of.");
+
+        groupJoinResponse.setGroupId(request.getGroupId());
+
+        this.discussionGroupRepository.findById(request.getGroupId())
+                .orElseThrow(() -> new DiscussionGroupException("INVALID_GROUP_ID", "Discussion group with id:- " + request.getGroupId() + ", does not exists"));
+
+        try{
+            checkMemberShip(request.getGroupId(), userId);
+        }catch (DiscussionGroupException ex){
+
+            AdmissionRequest admissionRequest = new AdmissionRequest();
+            admissionRequest.setGroupId(request.getGroupId());
+            admissionRequest.setUserId(userId);
+
+            // save the request
+            admissionRequest = admissionRequestRepository.save(admissionRequest);
+
+            groupJoinResponse.setRequestId(admissionRequest.getRequestId());
+            groupJoinResponse.setMessage("Your request has been entertained");
+        }
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        return ResponseEntity.status(201).headers(httpHeaders).body(groupJoinResponse);
+    }
+
+    private void populateLikeDetails(String groupId, List<PostResponse> responses){
+        responses.forEach(response->{
+            List<LikeDetailsDTO> likeDetailsDTOs = postLikeRepository.findLikeDetailsForThePost(response.getPostId(), groupId);
+            response.setLikeDetails(likeDetailsDTOs);
+        });
+    }
+
+    private void checkMemberShip(String discussionGroupId, String userId){
+        if(discussionGroupRepository.findMemberShip(discussionGroupId, userId).isEmpty()){
+            throw new DiscussionGroupException("INVALID_REQUEST", "User:- "+userId+", is not a member of the group");
+        }
+
     }
 }
