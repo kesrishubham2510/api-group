@@ -2,11 +2,14 @@ package com.myreflectionthoughts.group.datamodel.dto.response;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class PostResponse {
     private String postId;
     private String content;
     private int likes;
+    private List<LikeDetailsDTO> likeDetails;
     private String postedAt;
     private UserDetailsResponse author;
 
