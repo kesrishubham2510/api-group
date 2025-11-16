@@ -5,6 +5,7 @@ import com.myreflectionthoughts.group.datamodel.dto.request.AddUserToGroupReques
 import com.myreflectionthoughts.group.datamodel.dto.request.CreateDiscussionGroupRequest;
 import com.myreflectionthoughts.group.datamodel.dto.response.AddUserToGroupResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.DiscussionGroupMetaInfoResponse;
+import com.myreflectionthoughts.group.datamodel.dto.response.DiscussionGroupResponse;
 import com.myreflectionthoughts.group.datamodel.dto.response.PostsOfGroupResponse;
 import com.myreflectionthoughts.group.dataprovider.service.DiscussionGroupProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,9 +13,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.websocket.server.PathParam;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -71,4 +76,11 @@ public class DiscussionGroupController {
         return discussionGroupProvider.readPosts(groupId, pageInd, pageSize);
     }
 
+    @GetMapping(RestConstant.READ_GROUPS)
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
+    public ResponseEntity<List<DiscussionGroupMetaInfoResponse>> getGroups(
+            @RequestParam(value = "pageIndex", required = false, defaultValue = "0") int pageIndex,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "3") int pageSize){
+        return discussionGroupProvider.getGroups(pageIndex, pageSize);
+    }
 }

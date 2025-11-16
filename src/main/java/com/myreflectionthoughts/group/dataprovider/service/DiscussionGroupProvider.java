@@ -15,13 +15,10 @@ import com.myreflectionthoughts.group.dataprovider.repository.PostLikeRepository
 import com.myreflectionthoughts.group.dataprovider.repository.PostRepository;
 import com.myreflectionthoughts.group.dataprovider.repository.UserRepository;
 import com.myreflectionthoughts.group.exception.DiscussionGroupException;
-import com.myreflectionthoughts.group.usecase.AddUserToGroup;
-import com.myreflectionthoughts.group.usecase.CreateGroup;
-import com.myreflectionthoughts.group.usecase.ReadGroupInformation;
-import com.myreflectionthoughts.group.usecase.ReadPostsOfGroup;
-import com.myreflectionthoughts.group.usecase.UserCanRaiseRequestToJoinGroup;
+import com.myreflectionthoughts.group.usecase.*;
 import com.myreflectionthoughts.group.util.AppUtility;
 import com.myreflectionthoughts.group.util.MappingUtility;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -39,7 +36,8 @@ public class DiscussionGroupProvider
         ReadGroupInformation<String, DiscussionGroupMetaInfoResponse>,
         AddUserToGroup<AddUserToGroupRequest, AddUserToGroupResponse>,
         ReadPostsOfGroup<PostsOfGroupResponse>,
-        UserCanRaiseRequestToJoinGroup<RaiseGroupJoinRequest, GroupJoinResponse> {
+        UserCanRaiseRequestToJoinGroup<RaiseGroupJoinRequest, GroupJoinResponse>,
+        FetchExistingGroups<List<DiscussionGroupMetaInfoResponse>> {
 
     private final DiscussionGroupRepository discussionGroupRepository;
     private final UserRepository userRepository;
@@ -193,6 +191,46 @@ public class DiscussionGroupProvider
         HttpHeaders httpHeaders = new HttpHeaders();
 
         return ResponseEntity.status(201).headers(httpHeaders).body(groupJoinResponse);
+    }
+
+    @Override
+    public ResponseEntity<List<DiscussionGroupMetaInfoResponse>> getGroups(int pageIndex, int pageSize) {
+
+        if(pageIndex < 0){
+            pageIndex = 1;
+        }
+
+        if(pageSize < 3){
+            pageSize = 3;
+        }
+
+        if(pageSize > 10){
+            pageSize = 10;
+        }
+
+        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+        Page<DiscussionGroup> groupPage = discussionGroupRepository.findAll(pageable);
+
+        List<DiscussionGroupMetaInfoResponse> response = groupPage.stream().map(discussionGroup -> {
+            DiscussionGroupMetaInfoResponse discussionGroupResponse = new DiscussionGroupMetaInfoResponse();
+
+            discussionGroupResponse.setGroupId(discussionGroup.getGroupId());
+            discussionGroupResponse.setGroupName(discussionGroup.getGroupName());
+            discussionGroupResponse.setUsers(new ArrayList<>());
+            discussionGroupResponse.setDescription(discussionGroup.getDescription());
+            discussionGroupResponse.setCreatedAt(discussionGroup.getCreatedAt());
+
+            UserDetailsResponse groupAdmin = mappingUtility.buildUserDetailsResponse(discussionGroupRepository.findTheAdmin(discussionGroup.getGroupId())).get(0);
+
+            discussionGroupResponse.setGroupAdmin(groupAdmin);
+
+            return discussionGroupResponse;
+        }).collect(Collectors.toCollection(ArrayList::new));
+
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        return ResponseEntity.status(200).headers(httpHeaders).body(response);
     }
 
     private void populateLikeDetails(String groupId, List<PostResponse> responses, String requesterId){

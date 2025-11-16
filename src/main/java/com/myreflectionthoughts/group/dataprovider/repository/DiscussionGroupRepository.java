@@ -1,6 +1,8 @@
 package com.myreflectionthoughts.group.dataprovider.repository;
 
+import com.myreflectionthoughts.group.datamodel.dto.response.DiscussionGroupMetaInfoResponse;
 import com.myreflectionthoughts.group.datamodel.entity.DiscussionGroup;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

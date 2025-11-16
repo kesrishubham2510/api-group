@@ -16,6 +16,6 @@ public class RestConstant {
     public static final String UNLIKE_THE_POST = "/post/{postId}/unlike";
     public static final String LIKE_COMMENT_ON_THE_POST = "post/{postId}/comment/{commentId}/like";
     public static final String UNLIKE_COMMENT_ON_THE_POST = "post/{postId}/comment/{commentId}/unlike";
-
+    public static final String READ_GROUPS = "/discussion-groups";
     public static final String RAISE_REQUEST_TO_JOIN_GROUP = "/join";
 }
