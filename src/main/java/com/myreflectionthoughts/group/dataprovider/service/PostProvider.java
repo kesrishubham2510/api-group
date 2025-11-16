@@ -192,10 +192,10 @@ public class PostProvider implements
             throw new DiscussionGroupException("INTERACTION_NOT_REGISTERED", "You can't unlike a post you haven't liked");
         }
 
-        postLikeRepository.deleteById(request.getLikeId());
+        int row = postLikeRepository.deleteTheLikeOnPost(request.getPostId(), requesterId);
 
         HttpHeaders httpHeaders = new HttpHeaders();
-        return ResponseEntity.status(200).headers(httpHeaders).body(mappingUtility.buildLikePostInteractionResponse(LikePostResponse.class, request.getLikeId()));
+        return ResponseEntity.status(200).headers(httpHeaders).body(mappingUtility.buildLikePostInteractionResponse(LikePostResponse.class, ""+row));
     }
 
     @Override
