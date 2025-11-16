@@ -132,11 +132,11 @@ public class DiscussionGroupProvider
     @Override
     public ResponseEntity<PostsOfGroupResponse> readPosts(String groupId, int pageIndex, int pageSize) {
 
+        String requesterId = AppUtility.retrieveUserId();
 
         if(((UserAuth)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser().getRole().compareTo(UserRole.USER)==0) {
 
-            String requesterId = AppUtility.retrieveUserId();
-            if (discussionGroupRepository.findMemberShip(groupId, requesterId).isEmpty()) {
+             if (discussionGroupRepository.findMemberShip(groupId, requesterId).isEmpty()) {
                 throw new DiscussionGroupException("BAD_REQUEST", "User:- " + requesterId + ", not a member of the group");
             }
         }
@@ -153,7 +153,7 @@ public class DiscussionGroupProvider
 
         Pageable pageable = PageRequest.of(pageIndex, pageSize);
         List<PostResponse> posts = postRepository.findMyPosts(groupId, pageable).stream().collect(Collectors.toCollection(ArrayList::new));
-        populateLikeDetails(groupId, posts);
+        populateLikeDetails(groupId, posts, requesterId);
         PostsOfGroupResponse postsOfGroupResponse = new PostsOfGroupResponse();
         postsOfGroupResponse.setGroupId(groupId);
         postsOfGroupResponse.setPosts(posts);
@@ -195,11 +195,8 @@ public class DiscussionGroupProvider
         return ResponseEntity.status(201).headers(httpHeaders).body(groupJoinResponse);
     }
 
-    private void populateLikeDetails(String groupId, List<PostResponse> responses){
-        responses.forEach(response->{
-            List<LikeDetailsDTO> likeDetailsDTOs = postLikeRepository.findLikeDetailsForThePost(response.getPostId(), groupId);
-            response.setLikeDetails(likeDetailsDTOs);
-        });
+    private void populateLikeDetails(String groupId, List<PostResponse> responses, String requesterId){
+        responses.forEach(response-> response.setHaveILiked(!postLikeRepository.findLikeDetailsForThePost(response.getPostId(), groupId, requesterId).isEmpty()));
     }
 
     private void checkMemberShip(String discussionGroupId, String userId){

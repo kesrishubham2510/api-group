@@ -20,8 +20,10 @@ public interface PostLikeRepository extends JpaRepository<PostLike, String> {
                 pl.likeId
             )
             FROM PostLike pl
-            where pl.post.postId = :postId and pl.post.discussionGroup.groupId = :groupId
+            where pl.post.postId = :postId and 
+            pl.post.discussionGroup.groupId = :groupId and
+            pl.userId = :userId
             ORDER BY pl.likedAt DESC
             """)
-    List<LikeDetailsDTO> findLikeDetailsForThePost(String postId, String groupId);
+    List<Object[]> findLikeDetailsForThePost(String postId, String groupId, String userId);
 }

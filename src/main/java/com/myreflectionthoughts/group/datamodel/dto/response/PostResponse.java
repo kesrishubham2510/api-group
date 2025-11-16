@@ -9,7 +9,7 @@ public class PostResponse {
     private String postId;
     private String content;
     private int likes;
-    private List<LikeDetailsDTO> likeDetails;
+    private boolean haveILiked;
     private String postedAt;
     private UserDetailsResponse author;
 
