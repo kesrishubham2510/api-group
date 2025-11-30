@@ -177,12 +177,20 @@ public class DiscussionGroupProvider
             checkMemberShip(request.getGroupId(), userId);
         }catch (DiscussionGroupException ex){
 
+
+
             AdmissionRequest admissionRequest = new AdmissionRequest();
             admissionRequest.setGroupId(request.getGroupId());
             admissionRequest.setUserId(userId);
 
-            // save the request
-            admissionRequest = admissionRequestRepository.save(admissionRequest);
+            List<AdmissionRequest> admissionRequests = admissionRequestRepository.findByUserIdAndGroupId(userId, admissionRequest.getGroupId());
+
+            if(admissionRequests.isEmpty()) {
+                // save the request
+                admissionRequest = admissionRequestRepository.save(admissionRequest);
+            }else{
+                admissionRequest = admissionRequests.get(0);
+            }
 
             groupJoinResponse.setRequestId(admissionRequest.getRequestId());
             groupJoinResponse.setMessage("Your request has been entertained");
@@ -221,6 +229,13 @@ public class DiscussionGroupProvider
             discussionGroupResponse.setCreatedAt(discussionGroup.getCreatedAt());
 
             UserDetailsResponse groupAdmin = mappingUtility.buildUserDetailsResponse(discussionGroupRepository.findTheAdmin(discussionGroup.getGroupId())).get(0);
+
+            try{
+                checkMemberShip(discussionGroupResponse.getGroupId(), AppUtility.retrieveUserId());
+                discussionGroupResponse.setAmIAMember(true);
+            }catch(DiscussionGroupException exception){
+                discussionGroupResponse.setAmIAMember(false);
+            }
 
             discussionGroupResponse.setGroupAdmin(groupAdmin);
 

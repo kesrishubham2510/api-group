@@ -12,4 +12,5 @@ public class DiscussionGroupMetaInfoResponse {
     private String createdAt;
     private String description;
     private UserDetailsResponse groupAdmin;
+    private boolean amIAMember;
 }
